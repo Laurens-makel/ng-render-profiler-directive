@@ -1,27 +1,74 @@
-# NgRenderProfilerDirective
+# NG Render Profiler Directive
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.1.0.
+Whilst investigating on Angular's change detection cycles, I went trough a process of manually adding the following code blocks to my components and their views:
 
-## Development server
+some.component.html
+```
+<div *ngIf="profileRender()">
+  ... 
+</div>
+```
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+some.component.ts
+```
+export class SomeComponent {
 
-## Code scaffolding
+  ...
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+  profileRender(){
+    console.log('Change detection triggered for: ', this.constructor.name);
+    return true;
+  }
 
-## Build
+  ...
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+}
+```
 
-## Running unit tests
+This directive is aimed to simplify the process of identifying change detection to the following code:
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+some.component.html
+```
+<div renderProfiler>
+  ... 
+</div>
+```
 
-## Running end-to-end tests
+The directive will automatically pickup the class name of the related component and produce the following log line every time change detection is triggered.
+```
+render-profiler.directive.ts:35 Change detection triggered for AppComponent
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## Attributes
 
-## Further help
+### Transition Background
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+The directive changes the background color to a transition color, which defaults to `blue`, this helps to visualise which components have been rendered by change detection.
+
+some.component.html
+```
+<div renderProfiler [transitionBg]="'purple'">
+  ... 
+</div>
+```
+
+### Default Background
+
+The directive picks-up the set background color to the element or defaults to `white`, this is required for the transition to show which nested components are actually not rendered.
+
+some.component.html
+```
+<div renderProfiler [bdefaultBg]="'purple'">
+  ... 
+</div>
+```
+
+### Enable/Disable Profiling
+With the help of the `enabled` input variable, you could pass an expression to disable profiling change detection, for example in production mode:
+
+some.component.html
+```
+<div renderProfiler [enabled]="!environment.production">
+  ... 
+</div>
+```
